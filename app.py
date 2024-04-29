@@ -1,4 +1,3 @@
- #### import libraries ####
 import streamlit as st
 from transformers import pipeline , AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 import datetime
@@ -38,6 +37,7 @@ def preprocess(text): # for classification tabs
         t = 'http' if t.startswith('http') else t
         new_text.append(t)
     return " ".join(new_text)
+
 ## For classification tabs
 MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
@@ -52,6 +52,7 @@ def main():
         df_bugfix = pd.read_csv("datalar/bugetiketli_veri.csv")
         df_major = pd.read_csv("datalar/etiketli_veri.csv")
         df_happines = pd.read_csv("datalar/siniflandirilmis_data.csv")
+        df_main = pd.read_csv("datalar/main_veri.csv")
 
     except FileNotFoundError:
         st.error("One or both of the files not found. Please ensure they exist in the same directory as your script.")
@@ -62,6 +63,7 @@ def main():
     df_bugfix["date"] = pd.to_datetime(df_bugfix["date"], format="%m/%d/%Y").dt.date
     df_major["date"] = pd.to_datetime(df_major["date"], format="%m/%d/%Y").dt.date
     df_happines["Date"] = pd.to_datetime(df_happines["Date"], format='%m/%d/%Y').dt.date
+    df_main["date"] = pd.to_datetime(df_main["date"], format='%m/%d/%Y').dt.date
 
 
     # # Streamlit application with tabs
@@ -69,7 +71,7 @@ def main():
 
     with tabs[0]:  # Main tab
         st.title("Data Analysis")  # datas with 5 main class
-        label_counts_formain = df_major['zero_shot_label'].value_counts() #calculate how many values there are
+        label_counts_formain = df_main['zero_shot_label'].value_counts() #calculate how many values there are
         figmajor = go.Figure(go.Bar(
             x=label_counts_formain.index,
             y=label_counts_formain.values,
@@ -138,7 +140,7 @@ def main():
                     " This affects the dynamics of your game. We recommend that"
                     " you make an update on bugs and glitches as soon as possible."
                     " We recommend that you increase the update frequency.")
-        st.title("Lets Another Analys")
+        st.title("Major Uptade Analysis")
         a = ['May 2020', 'May 2022']
         b = [41.94, 50]
         # Create the line chart
@@ -148,7 +150,8 @@ def main():
         additional_lines = [
             {'x': x, 'y': [53.79, 58.14], 'name': 'Level'},
             {'x': x, 'y': [69.68, 65.85], 'name': 'Graphics'},
-            {'x': x, 'y': [43.42, 53.19], 'name': 'Difficult'}
+            {'x': x, 'y': [43.42, 53.19], 'name': 'Difficult'},
+            {'x': x, 'y': [35.71, 0], 'name': 'Boss'}
         ]
 
         # Add each additional line to the chart
@@ -165,6 +168,7 @@ def main():
         # Show the chart in Streamlit
         st.plotly_chart(fig_for_analysis2)
         st.markdown("- Your graphics team seems to be doing their job well.")
+        st.markdown("- In May 2022, all 4 comments made about **Boss** were negative, hence the happiness rate appears to be 0%.")
         st.title("Last Recommendation and Summary")
         st.markdown("- We've spotted people who think the game has become boring because few updates have been released."
                     " We recommend that you update more frequently.")
@@ -221,7 +225,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  #Sort the text and capitalize the first letter
                 ))
             fig.update_layout(
                 title="Sentiment analysis",
@@ -261,7 +265,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  #Sort the text and capitalize the first letter
                 ))
             figbos.update_layout(
                 title="Sentiment analysis",
@@ -298,7 +302,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  #Sort the text and capitalize the first letter
                 ))
             figlevel.update_layout(
                 title="Sentiment analysis",
@@ -316,7 +320,7 @@ def main():
             graphics_veri = pd.read_csv("datalar/siniflandirilmis_graphics.csv")
             graphics_veri['Date'] = pd.to_datetime(graphics_veri['Date'], dayfirst=True).dt.date
 
-            # sort by daate
+            # sort by date
             graphics_veri = graphics_veri.sort_values(by='Date')
 
             # filter datas
@@ -334,7 +338,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  #Sort the text and capitalize the first letter
                 ))
             figgraphics.update_layout(
                 title="Sentiment analysis",
@@ -370,7 +374,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figdifficulty.update_layout(
                 title="Sentiment analysis",
@@ -424,7 +428,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figfreeze.update_layout(
                 title="Sentiment analysis",
@@ -460,7 +464,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figappstore.update_layout(
                 title="Sentiment analysis",
@@ -496,7 +500,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figbug.update_layout(
                 title="Sentiment analysis",
@@ -533,7 +537,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figglitch.update_layout(
                 title="Sentiment analysis",
@@ -571,7 +575,7 @@ def main():
                     y=[label.capitalize()],
                     orientation='h',
                     marker_color=colors_ai[label],
-                    name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                    name=label.capitalize()  # Sort the text and capitalize the first letter
                 ))
             figcrash.update_layout(
                 title="Sentiment analysis",
@@ -664,7 +668,7 @@ def main():
                         y=[label],
                         orientation='h',
                         marker_color=colors[label],
-                        name=label.capitalize()  # Yazıyı sırala ve baş harfi büyük yap
+                        name=label.capitalize()  # Sort the text and capitalize the first letter
                     ))
 
                 fig.update_layout(
@@ -729,7 +733,8 @@ def main():
         uploaded_file = st.file_uploader("Please select a CSV file", type="csv")
 
         #uploading model for clasffication
-        classifier = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
+        classifier_nlp = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
+        classifier_zero = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
         if uploaded_file is not None:
             try:
@@ -737,7 +742,7 @@ def main():
                 df = pd.read_csv(uploaded_file)
 
                 # text classification
-                df['sentiment'] = df['text'].apply(lambda x: classifier(x)[0]['label'])
+                df['sentiment'] = df['text'].apply(lambda x: classifier_nlp(x)[0]['label'])
 
                 # visulation
                 sentiment_counts = df['sentiment'].value_counts()
@@ -752,8 +757,64 @@ def main():
                 st.write("Classified CSV file:")
                 st.dataframe(df)
 
+                if "id" not in df.columns or "date" not in df.columns or "text" not in df.columns:
+                    st.error("The CSV file should contain headers for 'id', 'date', and 'text'..")
+                else:
+                    # creating dictinoary
+                    labels1 = []
+
+                    # text classification and choosing bigger value
+                    for index, row in df.iterrows():
+                        text = row["text"]
+                        classification = classifier_zero(text, ["Bug", "Freeze", "Crash", "Glitch", "Appstore"])
+                        top_label = classification["labels"][0]
+                        labels1.append(top_label)
+
+                    # calculate label numbers
+                    label_counts1 = pd.Series(labels1).value_counts()
+
+                    # Graphcis
+                    st.subheader("Bug Fix BarChart")
+                    fig1 = go.Figure(go.Bar(
+                        x=label_counts1.values,
+                        y=label_counts1.index,
+                        orientation='h',
+                        marker=dict(color='yellow', line=dict(color='orange', width=2))
+                    ))
+                    fig1.update_layout(title="Graphics 1",
+                                       xaxis_title="Score",
+                                       yaxis_title="Labels")
+                    st.plotly_chart(fig1)
+
+                    # create a dictionary
+                    labels2 = []
+
+                    # text classificaton
+                    for index, row in df.iterrows():
+                        text = row["text"]
+                        classification = classifier_zero(text, ["Level", "Boss", "Difficulty", "Al", "Graphics"])
+                        top_label = classification["labels"][0]
+                        labels2.append(top_label)
+
+                    # calculating label values
+                    label_counts2 = pd.Series(labels2).value_counts()
+
+                    # Graphics
+                    st.subheader("Major Uptade BarChart")
+                    fig2 = go.Figure(go.Bar(
+                        x=label_counts2.values,
+                        y=label_counts2.index,
+                        orientation='h',
+                        marker=dict(color='orange', line=dict(color='yellow', width=2))
+                    ))
+                    fig2.update_layout(title=" Graphics 2",
+                                       xaxis_title="Score",
+                                       yaxis_title="Label")
+                    st.plotly_chart(fig2)
+
+
             except Exception as e:
-                st.error(f"Hata: {e}")
+                st.error(f"Error: {e}")
 
 
 def plot_major_updates(data):
