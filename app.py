@@ -29,20 +29,79 @@ def oneshot_text(metin):
     oneshot_result = oneshoter(metin, candidate_labels)
     return oneshot_result
 
-
-def preprocess(text): # for classification tabs
-    new_text = []
-    for t in text.split(" "):
-        t = '@user' if t.startswith('@') and len(t) > 1 else t
-        t = 'http' if t.startswith('http') else t
-        new_text.append(t)
-    return " ".join(new_text)
-
 ## For classification tabs
 MODEL = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 config = AutoConfig.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+
+def plot_major_updates(data):
+    if not data.empty:
+        # Create a dictionary to store label counts
+        label_counts = {}
+        for label in data["zero_shot_label"]:
+            if label in label_counts:
+                label_counts[label] += 1
+            else:
+                label_counts[label] = 1
+
+        # Prepare data for the chart
+        data_for_chart = {
+            "Label": list(label_counts.keys()),
+            "Count": list(label_counts.values())
+        }
+
+        # Create the bar chart
+        fig_major = go.Figure(go.Bar(
+            x=data_for_chart["Count"],
+            y=data_for_chart["Label"],
+            orientation='h',
+            marker_color = 'lightsalmon',
+            marker_line_color ='darkred',
+            marker_line_width = 2
+        ))
+        fig_major.update_layout(title="Major Updates Analysis",
+                                xaxis_title="Count",
+                                yaxis_title="Labels")
+        st.write(fig_major)
+    else:
+        st.write("No major updates found after selected date.")
+
+def plot_bug_fixes(data):
+    if not data.empty:
+        # Create a dictionary to store label counts (similar to plot_major_updates)
+        label_counts = {}
+        for label in data["zero_shot_label"]:
+            if label in label_counts:
+                label_counts[label] += 1
+            else:
+                label_counts[label] = 1
+
+        # Sort label counts by value (descending order) (similar to plot_major_updates)
+        sorted_label_counts = sorted(label_counts.items(), key=lambda item: item[1], reverse=True)
+
+        # Prepare data for the chart (similar to plot_major_updates)
+        data_for_chart = {
+            "Label": [label for label, count in sorted_label_counts],
+            "Count": [count for label, count in sorted_label_counts]
+        }
+
+        # Create the bar chart (similar to plot_major_updates)
+        fig_bugfix = go.Figure(go.Bar(
+            x=data_for_chart["Count"],  # Use label counts on x-axis
+            y=data_for_chart["Label"],
+            orientation='h',
+            marker_color='lightgreen',
+            marker_line_color='darkgreen',
+            marker_line_width=2
+        ))
+        fig_bugfix.update_layout(title="Bug Fixes Analysis",
+                                 xaxis_title="Count",  # Change x-axis title
+                                 yaxis_title="Labels")
+        st.write(fig_bugfix)
+    else:
+        st.write("No bug fixes found after selected date.")
+
 
 def main():
     """Reads data, creates customizable horizontal bar charts, and displays them in Streamlit tabs."""
@@ -645,14 +704,13 @@ def main():
                 st.subheader("Classification:")
                 result = oneshot_text(text)
 
-                text = preprocess(text)
                 encoded_input = tokenizer(text, return_tensors='pt')
                 output = model(**encoded_input)
                 scores = output[0][0].detach().numpy()
                 scores = softmax(scores)
 
                 ranking = np.argsort(scores)
-                ranking = ranking[::-1]
+
 
                 labels = [config.id2label[rank] for rank in ranking]
                 probabilities = [scores[rank] for rank in ranking]
@@ -719,11 +777,7 @@ def main():
                     height=400,
                     margin=dict(l=150),
                 )
-
-                # Center the chart horizontally
-                st.write("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
                 st.plotly_chart(fig)
-                st.write("</div>", unsafe_allow_html=True)
 
     with tabs[4]: #loading .csv file
         # Streamlit tittle
@@ -816,73 +870,6 @@ def main():
             except Exception as e:
                 st.error(f"Error: {e}")
 
-
-def plot_major_updates(data):
-    if not data.empty:
-        # Create a dictionary to store label counts
-        label_counts = {}
-        for label in data["zero_shot_label"]:
-            if label in label_counts:
-                label_counts[label] += 1
-            else:
-                label_counts[label] = 1
-
-        # Prepare data for the chart
-        data_for_chart = {
-            "Label": list(label_counts.keys()),
-            "Count": list(label_counts.values())
-        }
-
-        # Create the bar chart
-        fig_major = go.Figure(go.Bar(
-            x=data_for_chart["Count"],
-            y=data_for_chart["Label"],
-            orientation='h',
-            marker_color = 'lightsalmon',
-            marker_line_color ='darkred',
-            marker_line_width = 2
-        ))
-        fig_major.update_layout(title="Major Updates Analysis",
-                                xaxis_title="Count",
-                                yaxis_title="Labels")
-        st.write(fig_major)
-    else:
-        st.write("No major updates found after selected date.")
-
-def plot_bug_fixes(data):
-    if not data.empty:
-        # Create a dictionary to store label counts (similar to plot_major_updates)
-        label_counts = {}
-        for label in data["zero_shot_label"]:
-            if label in label_counts:
-                label_counts[label] += 1
-            else:
-                label_counts[label] = 1
-
-        # Sort label counts by value (descending order) (similar to plot_major_updates)
-        sorted_label_counts = sorted(label_counts.items(), key=lambda item: item[1], reverse=True)
-
-        # Prepare data for the chart (similar to plot_major_updates)
-        data_for_chart = {
-            "Label": [label for label, count in sorted_label_counts],
-            "Count": [count for label, count in sorted_label_counts]
-        }
-
-        # Create the bar chart (similar to plot_major_updates)
-        fig_bugfix = go.Figure(go.Bar(
-            x=data_for_chart["Count"],  # Use label counts on x-axis
-            y=data_for_chart["Label"],
-            orientation='h',
-            marker_color='lightgreen',
-            marker_line_color='darkgreen',
-            marker_line_width=2
-        ))
-        fig_bugfix.update_layout(title="Bug Fixes Analysis",
-                                 xaxis_title="Count",  # Change x-axis title
-                                 yaxis_title="Labels")
-        st.write(fig_bugfix)
-    else:
-        st.write("No bug fixes found after selected date.")
 
 
 if __name__ == "__main__":
