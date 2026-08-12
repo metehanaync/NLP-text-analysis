@@ -1,7 +1,13 @@
-streamlit==1.32.2
-transformers==4.40.0
+streamlit==1.61.1
+transformers==5.15.0
 pandas==2.2.1
 numpy==1.26.4
 scipy==1.13.0
 plotly==5.20.0
-torch==2.2.2
+torch==2.13.0
+
+# Pinned transitive dependencies that had known CVEs in older versions
+# pulled in by the packages above.
+pillow>=12.3.0
+protobuf>=6.33.5
+setuptools>=83.0.0
